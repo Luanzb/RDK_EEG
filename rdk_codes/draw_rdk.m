@@ -1,4 +1,4 @@
-function [dots] = draw_rdk(const,rdk,stimulusType)
+function [dots] = draw_rdk(const,rdk,stimulusType,trial,trl)
 % -------------------------------------------------------------------------
 % draw_rdk(const,rdk,stimulusType)
 % -------------------------------------------------------------------------
@@ -22,14 +22,14 @@ function [dots] = draw_rdk(const,rdk,stimulusType)
 
 % durBefSignal  = const.start_test_fr; % - 1;                                    % before the signal
 % durAftSignal  =  0; %size(const.end_test_fr+1:const.max_fr ,2);                  % after the signal
- durDistractor = const.max_fr ;
+ durDistractor = trl.targ_off(trial);
 
 % define matrix of distractor and test based on stimulusType parameter
 if stimulusType == 1
     % Create only target stimulus
     dotSet.xyd              = [const.pos,rdk.rad*2];                   % x coord / y coord / diameter
-    dotSet.durBef           = durBefSignal;
-    dotSet.durAft           = durAftSignal;
+    dotSet.durBef           = rdk.durBefSignal;
+    dotSet.durAft           = rdk.durAftSignal;
     dotSet.dirS             = rdk.dirSignal;
     dotSet.kappaVal         = rdk.kappa;
     dots{1}                 = comp_randomDots1(const,dotSet);

@@ -1,37 +1,32 @@
 function [sub] = Inputsubject(sub)
 
             prompt = {...
-                'Numero voluntario',...
-                'Numero sessao',...
+                'Numero voluntario',...                
                 'Genero (M/F/NB)',...
                 'Idade',...
                 'Mao dominante (E/D)',...
                 'Olho dominante (E/D)',...
-                'Correcao visao (S/N)',...
-                'Apresentação estímulos'};
+                'Correcao visao (S/N)'};
             
-            defanswer = {sub.id, sub.ses, '', '', '', '', '',sub.RDK_color};
+            defanswer = {sub.id, '', '', '', '', ''};
             answer = inputdlg(prompt, '', [1 22], defanswer);
             
             sub.id = answer{1};
             sub.id_num = str2double(answer{1});
             
-            sub.ses = answer{2};
-            sub.ses_num = str2double(answer{2});
+            sub.gender = answer{2};
             
-            sub.gender = answer{3};
+            sub.age = answer{3};
             
-            sub.age = answer{4};
+            sub.hand = answer{4};
             
-            sub.hand = answer{5};
-            
-            sub.eye = answer{6};
+            sub.eye = answer{5};
             if sub.eye == 'E'; sub.eye_num = 1;
             elseif sub.eye == 'D'; sub.eye_num = 2;
             else; error('Olho dominante inválido.');
             end
             
-            sub.eye_corr = answer{7};
+            sub.eye_corr = answer{6};
         
         
 end
