@@ -1,8 +1,8 @@
 
-git_path = 'C:/Users/luanb/OneDrive/Documentos/GitHub/RDK_EEG';
+git_path = '/home/kaneda/Documents/GitHub/RDK_EEG';
 addpath(genpath(git_path));
 
-pc_path = 'C:/Users/luanb/OneDrive/Documentos/Projeto_RDK_EEG';
+pc_path = '/home/kaneda/Documents/Projects/RDK_EEG';
 addpath(genpath(pc_path));
 
 % Ask subject number
@@ -24,7 +24,7 @@ Screen('Preference', 'SkipSyncTests', 1);
 rng('shuffle')
 
 screens = Screen('Screens');% Get the screen numbers.
-info.scr_num = screens(2);% draw to the externalscreen.
+info.scr_num = max(screens);% draw to the externalscreen.
 
 % Define black and white (white== 1 and black, 0).
 info.white_idx = WhiteIndex(info.scr_num);
@@ -60,35 +60,36 @@ info.fix_dur_sec = 0.5;         % Duration of fixation at ROI to start trial in 
 info.roi_fix_dva = 1.5;           % size of fixation window ROI
 info.roi_fix_pix = dva2pix(info.scr_dist_cm,info.scr_xsize_cm,info.scr_xsize,info.roi_fix_dva);
 
-
 %% Infos Fixation Dot
-info.fp_size_dva = 0.3;        % fixation Dot diameter
-info.fp_size_pix = round(dva2pix(info.scr_dist_cm, info.scr_xsize_cm, info.scr_xsize, info.fp_size_dva));
+info.fp_size_dva_black = 0.25;        % fixation Dot diameter
+info.fp_size_pix_black = round(dva2pix(info.scr_dist_cm, info.scr_xsize_cm, info.scr_xsize, info.fp_size_dva_black));
 
+info.fp_size_dva_white = 0.4;        % fixation Dot diameter white
+info.fp_size_pix_white = round(dva2pix(info.scr_dist_cm, info.scr_xsize_cm, info.scr_xsize, info.fp_size_dva_white));
 %%
 % create rectangle area in an arc format to be used as the saccadic cue
-info.cue_size = info.fp_size_pix; % diameter in pixels, same as the white fixaiton point
+info.cue_size = info.fp_size_pix_white; % diameter in pixels, same as the white fixaiton point
 base_cue_size = [0 0 info.cue_size info.cue_size];
 info.cue_position = CenterRectOnPointd(base_cue_size, info.scr_xcenter, info.scr_ycenter);
 
 %% Tamanho, velocidade e Posicoes dos RDK
 
 % tamnho do estimulo RDK
-RDK.size_dva = 4;
+RDK.size_dva = 5;
 RDK.size_pix = dva2pix(info.scr_dist_cm,info.scr_xsize_cm,info.scr_xsize,RDK.size_dva);
 % tamanho dos pontos do RDK
-RDK.size_dot_dva = .1;
+RDK.size_dot_dva = .14;
 RDK.size_dot_pix = dva2pix(info.scr_dist_cm,info.scr_xsize_cm,info.scr_xsize,RDK.size_dot_dva);
 
 % velocidade de movimento dos pontos por segundo. uma velocidade de 5 dva,
 % equvale a um deslocamento de XX pixels por segundo.
-RDK.speed_dot = 3; % 5
+RDK.speed_dot = 4; % 5
 RDK.speed_dot_pix = dva2pix(info.scr_dist_cm,info.scr_xsize_cm,info.scr_xsize,RDK.speed_dot);
 
 RDK.kappa = 100;
 
 % RDK Eccentricity
-RDK.EccDVA = 6;
+RDK.EccDVA = 8;
 RDK.Ecc = round(dva2pix(info.scr_dist_cm,info.scr_xsize_cm,info.scr_xsize,RDK.EccDVA));
 
 % RDK coordinates on the left and right side from FP
@@ -106,6 +107,19 @@ RDK.durAftSignal = 0;
 
 trl.cue_green = [0  155   0]/255;  % Green
 trl.cue_red = [250 0 0]/255;  % Red
+
+
+
+info.roi_sacc_dva = RDK.size_dva / 2;           % size of fixation window (RDK size) ROI at the saccade location 
+info.roi_sacc_pix = dva2pix(info.scr_dist_cm,info.scr_xsize_cm,info.scr_xsize,info.roi_sacc_dva);
+
+RDK.fix_rect = [0 0 RDK.size_pix RDK.size_pix];
+    
+% Left rect position for fixation after saccade
+RDK.fix_left = CenterRectOnPointd(RDK.fix_rect, RDK.coordL(1), RDK.coordL(2));
+
+% Right rect position for fixation after saccade
+RDK.fix_right = CenterRectOnPointd(RDK.fix_rect, RDK.coordR(1), RDK.coordR(2));
 
 %% General settings
 % Ajust screen size and specify item positions and trial timing
@@ -134,15 +148,26 @@ const.numMeanLife = 0.150;          const.numMeanLife = (round(const.numMeanLife
 
 %% Matrix of trials
 
-%  Side Color         Cue side             Ori Left       Ori Right          
+%  Side Color      Cue side       Ori Left     Ori Right  Direction report        
 %------------------------------------------------------------------------
-% 1 [Green]       1=Left  2=Right           
-% 2 [Red]         1=Left  2=Right      
+% 1 [Green]    1=Left  2=Right                             1 = report
+% 2 [Red]      1=Left  2=Right                             0 = no report
 
 info.ntrials = 600;
 
-pre_side_color = repelem([1 2],300)';
-cue_side = repmat(repelem([1 2],150),1,2)';
+% 60 trials in sequence for an specific color (red or green).
+% the color sequence (green=1; red=2 or red=2; green=1) will be set based
+% on the participant's number. Odd participant's number will have the
+% [green=1; red=2] sequence. Even participant's number will have the
+% [red=2; green=1] sequence. 
+
+if rem(sub.id_num,2) == 1
+    pre_side_color = repmat(repelem([1 2],60),1,5)';
+else
+    pre_side_color = repmat(repelem([2 1],60),1,5)';
+end
+
+cue_side = [Shuffle(repelem([1 2],150))'; Shuffle(repelem([1 2],150))'];
 
 pre_ori_left = [0:360 Shuffle(0:360)]';   
 ori_left = Shuffle(pre_ori_left(1:info.ntrials,1));
@@ -150,9 +175,11 @@ ori_left = Shuffle(pre_ori_left(1:info.ntrials,1));
 pre_ori_right = [0:360 Shuffle(0:360)]';   
 ori_right = Shuffle(pre_ori_right(1:info.ntrials,1));
 
+% direction report will occur only in trials with number one. there is 120
+% direction reports in total out of 600 trials, all randomly sorted.
+trial_report = Shuffle(repmat([1, repelem(0,4)],1,120),1)';
 
-matrix = [pre_side_color  cue_side  ori_left  ori_right];
-info.matrix = Shuffle(matrix,2);
+info.matrix = [pre_side_color  cue_side  ori_left  ori_right   trial_report];
 
 %%
 
@@ -160,25 +187,26 @@ info.matrix = Shuffle(matrix,2);
     % ones mark the beginning of a block of trials.
     trl.onset_blocks = repmat([1 repelem(0,19)],1,30)';
 
+    % twos mark the beginning of a new color block
+    trl.onset_blocks(1:60:600,1) = 2;
+
     % ones mark the end of a block of trials.
     trl.offset_blocks = repmat([repelem(0,19) 1],1,30)';
 
     % twos mark the resting block
     trl.offset_blocks(60:60:600,1) = 2;
+    
+
 
 % defines trial onset and offset. the onsets are randomized to occur
 % between 800 ms (96 frames) - 1.200 seconds (144 frames) ms after fixation onset to avoid temporal
 % expectation.
         trl.cue_on = randi([96 144],1,info.ntrials)';
-        trl.cue_off = trl.cue_on + 12; % cue offset after 100 ms
+        trl.cue_off = trl.cue_on + 11; % cue offset after 100 ms
 
         trl.targ_on = repelem(1,info.ntrials);
 
-        trl.targ_off = trl.cue_on + 60; % the RDK will be removed after 500 ms of cue onset. 
-
-        % this must go to the screen script
-      %  [dots]  = draw_rdk(const, RDK,1); % Left RDK
-      %  [dots2] = draw_rdk(const, RDK,1); % Right RDK
+        trl.trial_off = trl.cue_on + 83; % the RDK will be removed after 700 ms of cue onset. (trial offset)
 
 
 % initial dial angle (random to avoid bias)

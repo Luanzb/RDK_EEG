@@ -22,7 +22,7 @@ function [dots] = draw_rdk(const,rdk,stimulusType,trial,trl)
 
 % durBefSignal  = const.start_test_fr; % - 1;                                    % before the signal
 % durAftSignal  =  0; %size(const.end_test_fr+1:const.max_fr ,2);                  % after the signal
- durDistractor = trl.targ_off(trial);
+ durDistractor = trl.trial_off(trial);
 
 % define matrix of distractor and test based on stimulusType parameter
 if stimulusType == 1

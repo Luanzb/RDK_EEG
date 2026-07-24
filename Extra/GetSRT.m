@@ -4,7 +4,7 @@ function [s] = GetSRT(sub)
 addpath /usr/local/MATLAB/R2024b/toolbox/saccade_detection/
 addpath(genpath('/usr/local/MATLAB/R2024b/toolbox/edfmex/'))
 
-data_path = '/home/kaneda/Documents/Projects/PSA_RDK';
+data_path = '/home/kaneda/Documents/Projects/RDK_EEG';
 addpath(genpath(data_path));
 %%
 
@@ -26,12 +26,8 @@ for l = 1:length(eyedf.FEVENT)
         eyedat(2,l) = eyedf.FEVENT(l).sttime;
     elseif strncmp(eyedf.FEVENT(l).message,sprintf('cue_off_%1d', l),8)
         eyedat(3,l) = eyedf.FEVENT(l).sttime;
-    elseif strncmp(eyedf.FEVENT(l).message,sprintf('targ_on_%1d', l),8)
-        eyedat(4,l) = eyedf.FEVENT(l).sttime;
-    elseif strncmp(eyedf.FEVENT(l).message,sprintf('targ_off_%1d', l),9)
-        eyedat(5,l) = eyedf.FEVENT(l).sttime; %#ok<*AGROW>
     elseif strncmp(eyedf.FEVENT(l).message,sprintf('trl_off_%1d', l),8)
-        eyedat(6,l) = eyedf.FEVENT(l).sttime;
+        eyedat(4,l) = eyedf.FEVENT(l).sttime;
     end
 end
 
@@ -44,14 +40,8 @@ s.eyemat(3,:)=eyedat(2,eyedat(2,1:size(eyedat,2))~=0)-s.eyemat(1,:);       % cue
 s.eyemat(4,:)=eyedat(3,eyedat(3,1:size(eyedat,2))~=0);     % cue off on computer clock
 s.eyemat(5,:)=eyedat(3,eyedat(3,1:size(eyedat,2))~=0)-s.eyemat(1,:);       % cue off on trial time
 
-s.eyemat(6,:)=eyedat(4,eyedat(4,1:size(eyedat,2))~=0);     % targ on on computer clock
-s.eyemat(7,:)=eyedat(4,eyedat(4,1:size(eyedat,2))~=0)-s.eyemat(1,:);       % targ on on trial time
-
-s.eyemat(8,:)=eyedat(5,eyedat(5,1:size(eyedat,2))~=0);     % target off on computer clock
-s.eyemat(9,:)=eyedat(5,eyedat(5,1:size(eyedat,2))~=0)-s.eyemat(1,:);       % target off on trial time
-
-s.eyemat(10,:)=eyedat(6,eyedat(6,1:size(eyedat,2))~=0);     % trl off on computer clock
-s.eyemat(11,:)=eyedat(6,eyedat(6,1:size(eyedat,2))~=0)-s.eyemat(1,:);       %  trl off on trial time
+s.eyemat(6,:)=eyedat(4,eyedat(4,1:size(eyedat,2))~=0);     % trl off on computer clock
+s.eyemat(7,:)=eyedat(4,eyedat(4,1:size(eyedat,2))~=0)-s.eyemat(1,:);       %  trl off on trial time
 
 
 
@@ -64,7 +54,7 @@ s.eyeraw = [];
 
 %%%%%%%%%%%
 min_rt = 0;
-max_rt = 400;
+max_rt = 600;
 epoch_size = [min_rt max_rt];
 
 for l=1:size(s.eyemat,2)
@@ -89,10 +79,6 @@ s.eyemat_label = {'array on computer clock',...
                   'cue on trial time',...
                   'cue off computer clock',...
                   'cue off trial time',...
-                  'target on computer clock',...
-                  'target on trial time',...
-                  'target off computer clock',...
-                  'target off trial time',...
                   'trl off computer clock',...
                   'trl off trial time'};
 

@@ -8,7 +8,8 @@ function [sub] = Inputsubject(sub)
                 'Olho dominante (E/D)',...
                 'Correcao visao (S/N)'};
             
-            defanswer = {sub.id, '', '', '', '', ''};
+            %defanswer = {sub.id, '', '', '', '', ''};
+            defanswer = {sub.id, 'M', '29', 'E', 'D', 'N'};
             answer = inputdlg(prompt, '', [1 22], defanswer);
             
             sub.id = answer{1};
