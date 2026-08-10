@@ -63,15 +63,16 @@ line2 = 'Use [<] e [>] para ajustar e [ESPAÇO] para confirmar.';
 
 % ---------- Preparação visual inicial ----------
 Screen('BlendFunction', scr_win, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-DrawFormattedText(scr_win, line1, 'center', round(scr_center(2) - scr_ppd*7),[1 1 1]);
-DrawFormattedText(scr_win, line2, 'center', round(scr_center(2) + scr_ppd*7), [1 1 1], [], [], [], 1.5);
+DrawFormattedText(scr_win, line1, 'center', round(scr_center(2) - scr_ppd*7),[1 1 1]*255);
+DrawFormattedText(scr_win, line2, 'center', round(scr_center(2) + scr_ppd*7), [1 1 1]*255, [], [], [], 1.5);
 % anel vazado (contorno branco)
-Screen('FrameOval', scr_win, [255 103 0]/255, target_rect, ring_thick);
+Screen('FrameOval', scr_win, [255 103 0], target_rect, ring_thick);
 
 Screen('DrawDots', scr_win, [info.scr_xcenter info.scr_ycenter], info.fp_size_pix_white, info.white_idx, [], 2,1);
 Screen('DrawDots', scr_win, [info.scr_xcenter info.scr_ycenter], info.fp_size_pix_black, info.black_idx, [], 2,1);
 
 Screen('DrawingFinished', scr_win, 1);
+
 Screen('Flip', scr_win, [], 1);  % dontclear on
 Screen('DrawingFinished', scr_win);
 
@@ -110,14 +111,14 @@ while true
     
     Screen('BlendFunction', scr_win, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     % anel vazado
-    Screen('FrameOval', scr_win, [255 103 0]/255, target_rect, ring_thick);
+    Screen('FrameOval', scr_win, [255 103 0], target_rect, ring_thick);
 
     % pontos antipodais (eixo de orientação)
-    Screen('DrawDots', scr_win, [xdot; ydot], RDK.size_dot_pix*4, [255 103 0]/255, qtarget, 3, 1); % 14
+    Screen('DrawDots', scr_win, [xdot; ydot], RDK.size_dot_pix*4, [255 103 0], qtarget, 3, 1); % 14
 
     % textos
-    DrawFormattedText(scr_win, line1, 'center', round(scr_center(2) - scr_ppd*7),[1 1 1]);
-    DrawFormattedText(scr_win, line2, 'center', round(scr_center(2) + scr_ppd*7), [1 1 1], [], [], [], 1.5);
+    DrawFormattedText(scr_win, line1, 'center', round(scr_center(2) - scr_ppd*7),[1 1 1]*255);
+    DrawFormattedText(scr_win, line2, 'center', round(scr_center(2) + scr_ppd*7), [1 1 1]*255, [], [], [], 1.5);
 
     Screen('DrawDots', scr_win, [info.scr_xcenter info.scr_ycenter], info.fp_size_pix_white, info.white_idx, [], 2,1);
     Screen('DrawDots', scr_win, [info.scr_xcenter info.scr_ycenter], info.fp_size_pix_black, info.black_idx, [], 2,1);
@@ -167,27 +168,27 @@ if show_fb
     y_true = ring_rad * sin(true_rad);
 
     % draw ring
-    Screen('FrameOval', scr_win, [255 103 0]/255, target_rect, ring_thick);
+    Screen('FrameOval', scr_win, [255 103 0], target_rect, ring_thick);
 
     % draw TRUE direction dot (e.g., blue)
-    Screen('DrawDots', scr_win, [x_true; y_true], RDK.size_dot_pix*4, [1 1 1], qtarget, 3, 1);
+    Screen('DrawDots', scr_win, [x_true; y_true], RDK.size_dot_pix*4, [1 1 1]*255, qtarget, 3, 1);
 
     % pontos da resposta
     xdot = ring_rad * cos(resp_rad);
     ydot = ring_rad * sin(resp_rad);
-    Screen('DrawDots', scr_win, [xdot; ydot], RDK.size_dot_pix*4, [255 103 0]/255, qtarget, 3, 1);
+    Screen('DrawDots', scr_win, [xdot; ydot], RDK.size_dot_pix*4, [255 103 0], qtarget, 3, 1);
 
-    DrawFormattedText(scr_win, line1, 'center', round(scr_center(2) - scr_ppd*7),[1 1 1]);
+    DrawFormattedText(scr_win, line1, 'center', round(scr_center(2) - scr_ppd*7),[1 1 1]*255);
     if abs(err_deg) < 20
-        DrawFormattedText(scr_win, 'Excelente!', 'center', round(qtarget(2) - scr_ppd*4.7),[1 1 1]);
+        DrawFormattedText(scr_win, 'Excelente!', 'center', round(qtarget(2) - scr_ppd*4.7),[1 1 1]*255);
     elseif abs(err_deg) < 30
-        DrawFormattedText(scr_win, 'Muito bom!', 'center', round(qtarget(2) - scr_ppd*4.7),[1 1 1]);
+        DrawFormattedText(scr_win, 'Muito bom!', 'center', round(qtarget(2) - scr_ppd*4.7),[1 1 1]*255);
     elseif abs(err_deg) < 40
-        DrawFormattedText(scr_win, 'Foi perto!', 'center', round(qtarget(2) - scr_ppd*4.7),[1 1 1]);
+        DrawFormattedText(scr_win, 'Foi perto!', 'center', round(qtarget(2) - scr_ppd*4.7),[1 1 1]*255);
     else
-        DrawFormattedText(scr_win, sprintf('Erro: %0.1f°', err_deg), 'center', round(qtarget(2) - scr_ppd*4.7),[1 1 1]);
+        DrawFormattedText(scr_win, sprintf('Erro: %0.1f°', err_deg), 'center', round(qtarget(2) - scr_ppd*4.7),[1 1 1]*255);
     end
-    DrawFormattedText(scr_win, 'Pressione [ESPAÇO] para continuar', 'center', round(scr_center(2) + scr_ppd*7), [1 1 1], [], [], [], 1.5);
+    DrawFormattedText(scr_win, 'Pressione [ESPAÇO] para continuar', 'center', round(scr_center(2) + scr_ppd*7), [1 1 1]*255, [], [], [], 1.5);
 
     Screen('DrawDots', scr_win, [info.scr_xcenter info.scr_ycenter], info.fp_size_pix_white, info.white_idx, [], 2,1);
     Screen('DrawDots', scr_win, [info.scr_xcenter info.scr_ycenter], info.fp_size_pix_black, info.black_idx, [], 2,1);

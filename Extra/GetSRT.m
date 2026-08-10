@@ -24,10 +24,8 @@ for l = 1:length(eyedf.FEVENT)
         eyedat(1,l) = eyedf.FEVENT(l).sttime;
     elseif strncmp(eyedf.FEVENT(l).message,sprintf('cue_on_%1d', l),7)
         eyedat(2,l) = eyedf.FEVENT(l).sttime;
-    elseif strncmp(eyedf.FEVENT(l).message,sprintf('cue_off_%1d', l),8)
+    elseif strncmp(eyedf.FEVENT(l).message,sprintf('trial_off_%1d', l),10)
         eyedat(3,l) = eyedf.FEVENT(l).sttime;
-    elseif strncmp(eyedf.FEVENT(l).message,sprintf('trl_off_%1d', l),8)
-        eyedat(4,l) = eyedf.FEVENT(l).sttime;
     end
 end
 
@@ -37,11 +35,8 @@ s.eyemat=eyedat(1,eyedat(1,1:size(eyedat,2))~=0);      % array on computer clock
 s.eyemat(2,:)=eyedat(2,eyedat(2,1:size(eyedat,2))~=0);     % cue on computer clock
 s.eyemat(3,:)=eyedat(2,eyedat(2,1:size(eyedat,2))~=0)-s.eyemat(1,:);       % cue on trial time
 
-s.eyemat(4,:)=eyedat(3,eyedat(3,1:size(eyedat,2))~=0);     % cue off on computer clock
-s.eyemat(5,:)=eyedat(3,eyedat(3,1:size(eyedat,2))~=0)-s.eyemat(1,:);       % cue off on trial time
-
-s.eyemat(6,:)=eyedat(4,eyedat(4,1:size(eyedat,2))~=0);     % trl off on computer clock
-s.eyemat(7,:)=eyedat(4,eyedat(4,1:size(eyedat,2))~=0)-s.eyemat(1,:);       %  trl off on trial time
+s.eyemat(4,:)=eyedat(3,eyedat(3,1:size(eyedat,2))~=0);     % trl off on computer clock
+s.eyemat(5,:)=eyedat(3,eyedat(3,1:size(eyedat,2))~=0)-s.eyemat(1,:);       %  trl off on trial time
 
 
 
@@ -77,8 +72,6 @@ end
 s.eyemat_label = {'array on computer clock',...
                   'cue on computer clock',...
                   'cue on trial time',...
-                  'cue off computer clock',...
-                  'cue off trial time',...
                   'trl off computer clock',...
                   'trl off trial time'};
 

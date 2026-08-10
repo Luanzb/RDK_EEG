@@ -1,10 +1,10 @@
-function  [time,trl,info] = Screen_RDK_EEG(info,trl,sub,RDK,const)
+function  [time,trl,info] = Screen_Training(info,trl,sub,RDK,const)
 
 
 %% Screen setup
 
 FlushEvents;
-PsychDefaultSetup(1);% default settings for setting up Psychtoolbox
+PsychDefaultSetup(2);% default settings for setting up Psychtoolbox
 
 Screen('Preference', 'SyncTestSettings', 0.01, 50, 0.25);
 Screen('Preference', 'SuppressAllWarnings', 1);
@@ -17,21 +17,6 @@ info.black_idx = BlackIndex(info.scr_num);
 info.gray_idx = info.white_idx/2;
 
 [win, info.scr_rect] = PsychImaging('OpenWindow', info.scr_num, info.black_idx, [], 32, 2, [], []); % RODA EM TELA TODA
-
-
-%%
-%Set preferred mode:
-%0 is Pixel Mode RGB
-%1 is Pixel Mode GB
-mode = 0;
-
-Datapixx('Open');
-    Datapixx('DisablePixelMode');
-    Datapixx('RegWr');
-
-% Change to a bigger square to see the color
-% [0 0 100 100], for instance
-triggerRect = [0 0 1 1];
 
 %%
 % Eyetracking general setup
@@ -61,9 +46,9 @@ el = EyelinkInitDefaults(win);
 el.calibrationtargetsize = 1.5;               % Outer target size as percentage of the screen
 el.calibrationtargetwidth = 0.3;            % Inner target size as percentage of the screen
 el.backgroundcolour = info.black_idx;        % RGB black
-el.calibrationtargetcolour = [1 1 1]*255;       % RGB white
+el.calibrationtargetcolour = [1 1 1];       % RGB white
 % Set "Camera Setup" instructions text colour so it is different from background colour
-el.msgfontcolour = [0 170 0];                 % RGB green
+el.msgfontcolour = [0 170 0]/255;                 % RGB green
 
 % Use an image file instead of the default calibration bull's eye targets
 % (commenting out the following two lines will use default targets)
@@ -124,11 +109,9 @@ trial = 1;
 
 try
 
-    Datapixx('EnablePixelMode', mode);
-    Datapixx('RegWr');
+
 
     while trial <= size(info.matrix,1)
-
 
         FIX = 2;
         SRT2 = 2;
@@ -140,7 +123,7 @@ try
 
         % condicional flipa a cada inicio de bloco (a cada 20 tentativas)
         if info.matrix(trial,5) ~= 0
-
+            
             repeat_trl_blk = 0;
             repeat_trials= 0;
 
@@ -179,14 +162,13 @@ try
                     txt6 = 'ATENÇÃO À COR!';
                     DrawFormattedText(win, txt6, 'center', info.scr_ycenter -160, info.white_idx);
                 end
-                % beginning of a new short block
+                % beginning of a new short block 
             elseif info.matrix(trial,5) == 1
                 txt6 = 'ATENÇÃO À COR!';
                 DrawFormattedText(win, txt6, 'center', info.scr_ycenter -160, info.white_idx);
             end
 
-            % non-trigger signal - white square
-            Screen( 'FillRect',win,round([0 0 0]),triggerRect);
+
             Screen('Flip', win);
 
             RestrictKeysForKbCheck(KbName('space'));
@@ -212,6 +194,7 @@ try
         [dots2] = draw_rdk(const, RDK,1,trial,info); % RIGHT RDK
 
 
+
         Eyelink('Command', 'clear_screen 0');       % Clear Host PC display from any previus drawing
         Eyelink('ImageTransfer', '/home/kaneda/Documents/GitHub/PSA_RDK/Images/trl_on.bmp', 0, 0, 0, 0, 0, 0);
         Eyelink('StartRecording');
@@ -221,9 +204,6 @@ try
         Screen('BlendFunction', win, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         Screen('DrawDots', win, [info.scr_xcenter info.scr_ycenter], info.fp_size_pix_white, info.white_idx, [], 2,1);
         Screen('DrawDots', win, [info.scr_xcenter info.scr_ycenter], info.fp_size_pix_black, info.black_idx, [], 2,1);
-
-        % non-trigger signal - white square
-        Screen( 'FillRect',win,round([0 0 0]),triggerRect);
         time.fp_on(trial) = Screen('Flip', win);
 
         tic
@@ -268,16 +248,18 @@ try
             % onset, RDK clouds are removed.
             if frame < info.matrix(trial,7)
                 Screen('BlendFunction', win, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                Screen('DrawDots',win, round(dots{1,1}.posi{frame})', dots{1,1}.siz, [255 255 255], RDK.coordL,2);
-                Screen('DrawDots',win, round(dots2{1,1}.posi{frame})', dots2{1,1}.siz, [255 255 255], RDK.coordR,2);
-
+                Screen('DrawDots',win, round(dots{1,1}.posi{frame})', dots{1,1}.siz, [1 1 1], RDK.coordL,2);
+                Screen('DrawDots',win, round(dots2{1,1}.posi{frame})', dots2{1,1}.siz, [1 1 1], RDK.coordR,2);
+            
             elseif frame >= info.matrix(trial,7) && SRT2 == 2
                 Screen('BlendFunction', win, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                Screen('DrawDots',win, round(dots{1,1}.posi{frame})', dots{1,1}.siz, [255 255 255], RDK.coordL,2);
-                Screen('DrawDots',win, round(dots2{1,1}.posi{frame})', dots2{1,1}.siz, [255 255 255], RDK.coordR,2);
+                Screen('DrawDots',win, round(dots{1,1}.posi{frame})', dots{1,1}.siz, [1 1 1], RDK.coordL,2);
+                Screen('DrawDots',win, round(dots2{1,1}.posi{frame})', dots2{1,1}.siz, [1 1 1], RDK.coordR,2);
             end
 
 
+
+            %     Screen('BlendFunction',win,GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 
             % CUE ONSET. It ill remain on screen up to saccade execution or
             % time limit (700 ms)
@@ -317,32 +299,16 @@ try
 
 
             if frame == 1
-
-                % trigger signal - trial onset ([8 0 0])
-                Screen( 'FillRect',win,round([32 0 0]),triggerRect);
-
                 time.trl_on(trial) = Screen('Flip', win);
                 Eyelink('Message', sprintf('trial_onset_%1d', trial));
                 Eyelink('Command', 'record_status_message "TRIAL %d', trial);
-
             elseif frame == info.matrix(trial,7)
-
-                % trigger signal - cue onset ([16 0 0])
-                Screen('FillRect',win,round([64 0 0]),triggerRect);
-
                 time.cue_on(trial) = Screen('Flip', win);
                 Eyelink('Message', sprintf('cue_on_%1d', trial));
-
             elseif frame == info.matrix(trial,8)
-
-                % trigger signal - trial offset ([32 0 0])
-                Screen( 'FillRect',win,round([128 0 0]),triggerRect);
-
                 time.trial_off(trial) = Screen('Flip', win);
                 Eyelink('Message', sprintf('trial_off_%1d', trial));
             else
-                % non-trigger signal - white square
-                Screen( 'FillRect',win,round([0 0 0]),triggerRect);
                 Screen('Flip', win);
             end
 
@@ -377,17 +343,13 @@ try
         end
 
 
-
         Screen('BlendFunction', win, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         Screen('DrawDots', win, [info.scr_xcenter info.scr_ycenter], info.fp_size_pix_white, info.white_idx, [], 2,1);
         Screen('DrawDots', win, [info.scr_xcenter info.scr_ycenter], info.fp_size_pix_black, info.black_idx, [], 2,1);
-
-        % non-trigger signal - white square
-        Screen( 'FillRect',win,round([0 0 0]),triggerRect);
         Screen('Flip', win);
 
 
-
+        
         if FIX == 3
             Screen('BlendFunction', win, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -402,13 +364,13 @@ try
             KbWait;
             KbReleaseWait;
             RestrictKeysForKbCheck([]);
-
-
+            
+            
 
             % shows message in case the saccade was not executed to the correct
             % side
         elseif info.matrix(trial,2) == 1 && saccade_left == 2 || ...
-                info.matrix(trial,2) == 2 && saccade_right == 2
+               info.matrix(trial,2) == 2 && saccade_right == 2
 
             Screen('BlendFunction', win, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -420,6 +382,7 @@ try
                 DrawFormattedText(win, txt2, 'center', info.scr_ycenter, trl.cue_pink);
             end
 
+   
             Screen('Flip', win);
             abort_dir_report = 1;
 
@@ -428,9 +391,9 @@ try
             KbWait;
             KbReleaseWait;
             RestrictKeysForKbCheck([]);
-
-            % shows delayed saccade onset message in case saccade was slow but
-            % executed to the corect side
+        
+        % shows delayed saccade onset message in case saccade was slow but
+        % executed to the corect side
         elseif SRT2 >= .35 && info.matrix(trial,1) == 1 && saccade_left == 1 || ...
                 SRT2 >= .35 && info.matrix(trial,1) == 2 && saccade_right == 1
 
@@ -438,8 +401,6 @@ try
 
             txt1 = 'Movimento lento!';
             DrawFormattedText(win, txt1, 'center', info.scr_ycenter, info.white_idx);
-
-
             Screen('Flip', win);
             abort_dir_report = 1;
 
@@ -455,41 +416,40 @@ try
 
         % enters the next conditional in case saccade latency and saccade
         % sides meet the specified requirements.
-        if abort_dir_report == 2
+        if abort_dir_report == 2         
 
-            % Orientation selector -----------------------------------------------
+                % Orientation selector -----------------------------------------------
 
-            % Continuous report (correcting angle convention)
-            if info.matrix(trial,2) == 1
-                qtarget = RDK.coordL;         % 1..4
-                % angle used in DrawTexture
-                true_deg_ptb = info.matrix(trial,3); % LEFT RDK movement direction;
-            else
-                qtarget = RDK.coordR;
-                % angle used in DrawTexture
-                true_deg_ptb = info.matrix(trial,4); % RIGHT RDK movement direction;
-            end
-
-
-
-            % *** CRITICAL CONVERSION ***
-            % PTB effectively rotates clockwise; dial uses counter-clockwise.
-            % So we reverse the sign and treat it as an axis. (0..360):
-
-            true_dir = mod(-true_deg_ptb, 360); % keep your PTB sign correction
+                % Continuous report (correcting angle convention)
+                if info.matrix(trial,2) == 1
+                    qtarget = RDK.coordL;         % 1..4
+                    % angle used in DrawTexture
+                    true_deg_ptb = info.matrix(trial,3); % LEFT RDK movement direction;
+                else
+                    qtarget = RDK.coordR;
+                    % angle used in DrawTexture
+                    true_deg_ptb = info.matrix(trial,4); % RIGHT RDK movement direction;
+                end
 
 
-            % pixels per degree (1° -> px)
-            ppd = dva2pix(info.scr_dist_cm, info.scr_xsize_cm, info.scr_xsize, 1);
+
+                % *** CRITICAL CONVERSION ***
+                % PTB effectively rotates clockwise; dial uses counter-clockwise.
+                % So we reverse the sign and treat it as an axis. (0..360):
+
+                true_dir = mod(-true_deg_ptb, 360); % keep your PTB sign correction
 
 
-            [resp_deg, err_deg, rt] = get_continuous_report(win, ppd, info.matrix(trial,9), true_dir, true, info, qtarget,RDK);
+                % pixels per degree (1° -> px)
+                ppd = dva2pix(info.scr_dist_cm, info.scr_xsize_cm, info.scr_xsize, 1);
+
+                [resp_deg, err_deg, rt] = get_continuous_report(win, ppd, info.matrix(trial,9), true_dir, true, info, qtarget,RDK);
 
 
-            info.matrix(trial,11) = resp_deg; % (1..360)
-            info.matrix(trial,12) = err_deg;   % (-180, +180]
-            info.matrix(trial,13) = true_dir;
-            info.matrix(trial,14) = rt; % time (s)
+                info.matrix(trial,11) = resp_deg; % (1..360)
+                info.matrix(trial,12) = err_deg;   % (-180, +180]
+                info.matrix(trial,13) = true_dir;
+                info.matrix(trial,14) = rt; % time (s)
 
 
         end
@@ -497,7 +457,7 @@ try
         toc
 
 
-        if info.matrix(trial,10) == 0
+        if info.matrix(trial,10) == 0 
             % if a trial was aborted, it will be added at the end of the
             % current short block
             if abort_dir_report == 1
@@ -507,8 +467,6 @@ try
 
             end
         end
-
-
 
         % removes the inital block message about color change or just new block if this
         % message trial (marked wit two or one in the fifth column in info.matrix)
@@ -527,14 +485,14 @@ try
         % if the conditional above is met, then the aborted trials are
         % added to the end of the current short block
         if info.matrix(trial,6) == 1 && repeat_trl_blk ~= 0 || ...
-                info.matrix(trial,6) == 2 && repeat_trl_blk ~= 0
+           info.matrix(trial,6) == 2 && repeat_trl_blk ~= 0
 
 
             info.matrix = [info.matrix(1:trial,:);  info.matrix(repeat_trials,:);  info.matrix(trial+size(repeat_trials,2):end,:)];
 
             if info.matrix(trial,6) == 1 % checks if the current end-block-trial is marked for resting (2)
                 info.matrix(trial+size(repeat_trials,1),6) = 1; % Non-resitng block: adds the block end message after the last repeated trial is run.
-            else
+            else 
                 info.matrix(trial+size(repeat_trials,1),6) = 2; % Resting block: adds the block end message after the last repeated trial is run.
             end
 
@@ -583,7 +541,6 @@ try
 
             end
 
-
             Screen('Flip', win);
 
             RestrictKeysForKbCheck(KbName('space'));
@@ -598,9 +555,6 @@ try
         trial = trial + 1;
 
     end
-
-    Datapixx('DisablePixelMode');
-    Datapixx('RegWr');
 
     Screen('CloseAll');
 

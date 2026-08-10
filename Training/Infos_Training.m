@@ -57,7 +57,7 @@ info.scr_dist_cm = 57;          % Viewing distance from screen (cm)
 
 % parameters for fixation period before every trial onset.
 info.fix_dur_sec = 0.5;         % Duration of fixation at ROI to start trial in secs
-info.roi_fix_dva = 2;           % size of fixation window ROI
+info.roi_fix_dva = 1.5;           % size of fixation window ROI
 info.roi_fix_pix = dva2pix(info.scr_dist_cm,info.scr_xsize_cm,info.scr_xsize,info.roi_fix_dva);
 
 %% Infos Fixation Dot
@@ -108,8 +108,8 @@ RDK.durAftSignal = 0;
 % trl.cue_green = [0  155   0]/255;  % Green
 % trl.cue_red = [250 0 0]/255;  % Red
 
-trl.cue_blue = [0 93 255];  % Blue
-trl.cue_pink = [215 0 157];  % Pink
+trl.cue_blue = [0 93 255]/255;  % Blue
+trl.cue_pink = [215 0 157]/255;  % Pink
 
 info.roi_sacc_dva = RDK.size_dva / 2;           % size of fixation window (RDK size) ROI at the saccade location 
 info.roi_sacc_pix = dva2pix(info.scr_dist_cm,info.scr_xsize_cm,info.scr_xsize,info.roi_sacc_dva);
@@ -154,49 +154,49 @@ const.numMeanLife = 0.150;          const.numMeanLife = (round(const.numMeanLife
 % 1 [Green]    1=Left  2=Right                             1 = report
 % 2 [Red]      1=Left  2=Right                             0 = no report
 
-info.ntrials = 800;
+info.ntrials = 64;
 
-% 60 trials in sequence for an specific color (red or green).
-% the color sequence (green=1; red=2 or red=2; green=1) will be set based
+% 80 trials in sequence for an specific color (red or green).
+% the color sequence (blue=1; pink=2 or pink=2; blue=1) will be set based
 % on the participant's number. Odd participant's number will have the
-% [green=1; red=2] sequence. Even participant's number will have the
-% [red=2; green=1] sequence. 
+% [blue=1; pink=2] sequence. Even participant's number will have the
+% [pink=2; blue=1] sequence. 
 
 if rem(sub.id_num,2) == 1
-    pre_side_color = repmat(repelem([1 2],80),1,5)';
+    pre_side_color = repmat(repelem([1 2],16),1,2)';
 else
-    pre_side_color = repmat(repelem([2 1],80),1,5)';
+    pre_side_color = repmat(repelem([2 1],16),1,2)';
 end
 
 
-left_cue = repelem(1,40)';
-right_cue = repelem(2,40)';
+left_cue = repelem(1,8)';
+right_cue = repelem(2,8)';
 cue_side = [];
 
-for dd = 1:10 
+for dd = 1:4 
     pre_cue_side = Shuffle([left_cue; right_cue]);
     cue_side = [cue_side; pre_cue_side];
 end
 
 
-pre_ori_left = [repmat(repelem([1:360],1),1,2) Shuffle(1:360)]';   
-ori_left = Shuffle(pre_ori_left(1:info.ntrials,1));
+pre_ori_left = Shuffle(1:360)';   
+ori_left = pre_ori_left(1:info.ntrials,1);
 
-pre_ori_right = [repmat(repelem([1:360],1),1,2)  Shuffle(1:360)]';   
-ori_right = Shuffle(pre_ori_right(1:info.ntrials,1));
+pre_ori_right = Shuffle(1:360)';   
+ori_right = pre_ori_right(1:info.ntrials,1);
 
 
-% ones mark the beginning of a block of trials.
-    trl.onset_blocks = repmat([1 repelem(0,19)],1,40)';
+% ones mark the beginning of a short block of trials.
+    trl.onset_blocks = repmat([1 repelem(0,3)],1,16)';
 
     % twos mark the beginning of a new color block
-    trl.onset_blocks(1:80:info.ntrials,1) = 2;
+    trl.onset_blocks(1:16:info.ntrials,1) = 2;
 
     % ones mark the end of a block of trials.
-    trl.offset_blocks = repmat([repelem(0,19) 1],1,40)';
+    trl.offset_blocks = repmat([repelem(0,3) 1],1,16)';
 
     % twos mark the resting block
-    trl.offset_blocks(80:80:800,1) = 2;
+    trl.offset_blocks(16:16:64,1) = 2;
     
 
 
@@ -222,7 +222,7 @@ rt_s =       NaN(info.ntrials,1);
 
    
 
-matrix = [pre_side_color     ... 1 
+info.matrix = [pre_side_color     ... 1 
           cue_side           ... 2
           ori_left           ... 3
           ori_right          ... 4
@@ -239,19 +239,10 @@ matrix = [pre_side_color     ... 1
 
 
 
-info.matrix = matrix;
-%%
-
-
-    
-
     %% Create data directories
 
-    if ~exist(sprintf('%s/Data/S%d/Task/', pc_path, sub.id_num), 'dir')
-        mkdir(sprintf('%s/Data/S%d/Task/', pc_path, sub.id_num))
-    end
-    if ~exist(sprintf('%s/Data/S%d/Eye/', pc_path, sub.id_num), 'dir')
-        mkdir(sprintf('%s/Data/S%d/Eye/', pc_path, sub.id_num))
+    if ~exist(sprintf('%s/Data/S%d/Training/', pc_path, sub.id_num), 'dir')
+        mkdir(sprintf('%s/Data/S%d/Training/', pc_path, sub.id_num))
     end
 
 
@@ -259,8 +250,8 @@ info.matrix = matrix;
     %%% Save files
 
     % Save trials information
-    sub.trlinfo_fname = sprintf('trlinfo_sub_%d_%s', sub.id_num, datestr(now,'yymmdd-HHMM')); %#ok<*TNOW1,*DATST>
-    save(fullfile(sprintf('%s/Data/S%d/%s', pc_path, sub.id_num), [sub.trlinfo_fname, '.mat']), 'info', 'trl', 'sub','RDK','const', '-v7.3');
+    sub.trlinfo_fname = sprintf('training_sub_%d_%s', sub.id_num, datestr(now,'yymmdd-HHMM')); %#ok<*TNOW1,*DATST>
+    save(fullfile(sprintf('%s/Data/S%d/Training/%s', pc_path, sub.id_num), [sub.trlinfo_fname, '.mat']), 'info', 'trl', 'sub','RDK','const', '-v7.3');
 
 
     fprintf('\nFeito!\n')

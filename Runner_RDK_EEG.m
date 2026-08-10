@@ -29,13 +29,13 @@ load([info_file.folder '/' info_file.name])
 
 %% Run experiment
 
-[resp,time,trl] = Screen_RDK_EEG(info,trl,sub,RDK,const);
+[time,trl,info] = Screen_RDK_EEG(info,trl,sub,RDK,const);
 
 %%
 
 % Save data files
 sub.data_fname = sprintf('data_sub_%d_%s', sub.id_num, datestr(now,'yymmdd-HHMM')); %#ok<TNOW1,DATST>
-save(fullfile(sprintf('%s/Data/S%d/Task/%s', pc_path, sub.id_num), [sub.data_fname, '.mat']), 'resp', 'time', 'info','trl','sub','RDK','const', '-v7.3'); % resp
+save(fullfile(sprintf('%s/Data/S%d/Task/%s', pc_path, sub.id_num), [sub.data_fname, '.mat']), 'time', 'info','trl','sub','RDK','const', '-v7.3'); % resp
 
 sub.eye_fname = 'RDKeye.edf';
 if exist(sub.eye_fname, 'file')
@@ -47,4 +47,4 @@ end
 
  [s] = GetSRT(sub);
 % 
-save(fullfile(sprintf('%s/Data/S%d/Task/%s', pc_path, sub.id_num), [sub.data_fname, '.mat']), 'resp', 'time', 'info','trl','sub','RDK','const','s', '-v7.3'); % resp
+save(fullfile(sprintf('%s/Data/S%d/Task/%s', pc_path, sub.id_num), [sub.data_fname, '.mat']),'time', 'info','trl','sub','RDK','const','s', '-v7.3'); % resp
