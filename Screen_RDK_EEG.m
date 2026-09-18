@@ -127,6 +127,7 @@ try
     Datapixx('EnablePixelMode', mode);
     Datapixx('RegWr');
 
+
     while trial <= size(info.matrix,1)
 
 
@@ -204,16 +205,19 @@ try
 
         % RDk infos
         const.test_dur_fr = info.matrix(trial,8);
+        RDK.dirSignal = info.matrix(trial,4); % Target motion direction
 
-        RDK.dirSignal = info.matrix(trial,3); % LEFT RDK movement direction
-        [dots]  = draw_rdk(const, RDK,1,trial,info); % LEFT RDK
+        if info.matrix(trial,3) == 1 % Target on the left side
+            [dots]  = draw_rdk(const, RDK,1,trial,info);
+            [dots2] = draw_rdk(const, RDK,0,trial,info);
+        else                          % Target on the right side
+            [dots]  = draw_rdk(const, RDK,0,trial,info);
+            [dots2] = draw_rdk(const, RDK,1,trial,info);
 
-        RDK.dirSignal = info.matrix(trial,4); % RIGHT RDK movement direction
-        [dots2] = draw_rdk(const, RDK,1,trial,info); % RIGHT RDK
-
+        end
 
         Eyelink('Command', 'clear_screen 0');       % Clear Host PC display from any previus drawing
-        Eyelink('ImageTransfer', '/home/kaneda/Documents/GitHub/PSA_RDK/Images/trl_on.bmp', 0, 0, 0, 0, 0, 0);
+      %  Eyelink('ImageTransfer', '/home/kaneda/Documents/GitHub/PSA_RDK/Images/trl_on.bmp', 0, 0, 0, 0, 0, 0);
         Eyelink('StartRecording');
         Eyelink('Command', 'record_status_message "TRIAL %d/%d"', trial, size(info.ntrials,1));
 
@@ -460,14 +464,16 @@ try
             % Orientation selector -----------------------------------------------
 
             % Continuous report (correcting angle convention)
-            if info.matrix(trial,2) == 1
-                qtarget = RDK.coordL;         % 1..4
+            % motion direction report is always on the target side.
+
+            if info.matrix(trial,3) == 1
+                qtarget = RDK.coordL;        
                 % angle used in DrawTexture
-                true_deg_ptb = info.matrix(trial,3); % LEFT RDK movement direction;
+                true_deg_ptb = info.matrix(trial,4); 
             else
                 qtarget = RDK.coordR;
                 % angle used in DrawTexture
-                true_deg_ptb = info.matrix(trial,4); % RIGHT RDK movement direction;
+                true_deg_ptb = info.matrix(trial,4);
             end
 
 
@@ -511,7 +517,7 @@ try
 
 
         % removes the inital block message about color change or just new block if this
-        % message trial (marked wit two or one in the fifth column in info.matrix)
+        % message trial (marked with two or one in the fifth column in info.matrix)
         % is marked as a trial to be repeated.
         if info.matrix(trial,10) == 0
             if abort_dir_report == 1
@@ -540,7 +546,7 @@ try
 
             info.matrix(trial,6) = 0; % removes the block end message from the original row
 
-            info.matrix(repeat_trials,10) = 1; % adds one to rows in the tenth columns if the trial was repeated at the block end
+            info.matrix(repeat_trials,10) = 1; % adds one to rows in the tenth column if the trial was repeated at the block end
             info.matrix(trial+1:trial+size(repeat_trials,1),10) = 2;% adds 2 to the repeated trial marked as one before.
             repeat_trl_blk = 0; % resets the variable, avoiding that in the next short block it contains rejected trials from the previous block
 
@@ -576,7 +582,7 @@ try
 
                 txt_ = '----------------------';
                 DrawFormattedText(win, txt, 'center', info.scr_ycenter, info.white_idx);
-                DrawFormattedText(win, txt3, 'center', info.scr_ycenter+65, [255 103 0]/255);
+                DrawFormattedText(win, txt3, 'center', info.scr_ycenter+65, [255 103 0]);
                 DrawFormattedText(win, [txt_ txt_ txt_], 'center', info.scr_ycenter +100,info.white_idx);
                 DrawFormattedText(win, txt1, 'center', info.scr_ycenter + 130, info.white_idx);
                 DrawFormattedText(win, [txt_ txt_ txt_], 'center', info.scr_ycenter + 150,info.white_idx);

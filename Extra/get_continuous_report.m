@@ -1,4 +1,4 @@
-function [resp_deg, err_deg, rt] = get_continuous_report(scr_win, scr_ppd, resp_on_deg, true_deg, show_fb, info, qtarget,RDK)
+function [resp_deg, err_deg, rt] = get_continuous_report(win, scr_ppd, resp_on_deg, true_deg, show_fb, info, qtarget,RDK)
 % GET_CONTINUOUS_REPORT
 % Ajuste contínuo de Direcçao (0-360°) com setas esquerda/direita.
 % Retorna: resp_deg (resposta), err_deg (erro em (-180,180]), rt (s).
@@ -28,7 +28,7 @@ exp_velo_deg   = velo_expo;
 base_velo_deg  = delta_velo_deg;
 
 % ---------- Centro e geometria ----------
-[wpx, hpx] = Screen('WindowSize', scr_win);
+[wpx, hpx] = Screen('WindowSize', win);
 scr_center = [wpx hpx] / 2;
 
 
@@ -62,20 +62,22 @@ line2 = 'Use [<] e [>] para ajustar e [ESPAÇO] para confirmar.';
 
 
 % ---------- Preparação visual inicial ----------
-Screen('BlendFunction', scr_win, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-DrawFormattedText(scr_win, line1, 'center', round(scr_center(2) - scr_ppd*7),[1 1 1]*255);
-DrawFormattedText(scr_win, line2, 'center', round(scr_center(2) + scr_ppd*7), [1 1 1]*255, [], [], [], 1.5);
+Screen('BlendFunction', win, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+DrawFormattedText(win, line1, 'center', round(scr_center(2) - scr_ppd*7),[1 1 1]*255);
+DrawFormattedText(win, line2, 'center', round(scr_center(2) + scr_ppd*7), [1 1 1]*255, [], [], [], 1.5);
 % anel vazado (contorno branco)
-Screen('FrameOval', scr_win, [255 103 0], target_rect, ring_thick);
+Screen('FrameOval', win, [255 103 0], target_rect, ring_thick);
 
-Screen('DrawDots', scr_win, [info.scr_xcenter info.scr_ycenter], info.fp_size_pix_white, info.white_idx, [], 2,1);
-Screen('DrawDots', scr_win, [info.scr_xcenter info.scr_ycenter], info.fp_size_pix_black, info.black_idx, [], 2,1);
+Screen('DrawDots', win, [info.scr_xcenter info.scr_ycenter], info.fp_size_pix_white, info.white_idx, [], 2,1);
+Screen('DrawDots', win, [info.scr_xcenter info.scr_ycenter], info.fp_size_pix_black, info.black_idx, [], 2,1);
 
-Screen('DrawingFinished', scr_win, 1);
+Screen('DrawingFinished', win, 1);
 
-Screen('Flip', scr_win, [], 1);  % dontclear on
-Screen('DrawingFinished', scr_win);
+Screen('Flip', win, [], 1);  % dontclear on
+Screen('DrawingFinished', win);
 
+%         % Add frame to movie
+% Screen('AddFrameToMovie', win, [], 'frontBuffer', moviePtr);
 
 % ---------- Espera pela 1ª seta para definir direção inicial ----------
 FlushEvents;
@@ -109,22 +111,25 @@ while true
     xdot = ring_rad * cos(resp_rad);
     ydot = ring_rad * sin(resp_rad);
     
-    Screen('BlendFunction', scr_win, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    Screen('BlendFunction', win, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     % anel vazado
-    Screen('FrameOval', scr_win, [255 103 0], target_rect, ring_thick);
+    Screen('FrameOval', win, [255 103 0], target_rect, ring_thick);
 
     % pontos antipodais (eixo de orientação)
-    Screen('DrawDots', scr_win, [xdot; ydot], RDK.size_dot_pix*4, [255 103 0], qtarget, 3, 1); % 14
+    Screen('DrawDots', win, [xdot; ydot], RDK.size_dot_pix*4, [255 103 0], qtarget, 3, 1); % 14
 
     % textos
-    DrawFormattedText(scr_win, line1, 'center', round(scr_center(2) - scr_ppd*7),[1 1 1]*255);
-    DrawFormattedText(scr_win, line2, 'center', round(scr_center(2) + scr_ppd*7), [1 1 1]*255, [], [], [], 1.5);
+    DrawFormattedText(win, line1, 'center', round(scr_center(2) - scr_ppd*7),[1 1 1]*255);
+    DrawFormattedText(win, line2, 'center', round(scr_center(2) + scr_ppd*7), [1 1 1]*255, [], [], [], 1.5);
 
-    Screen('DrawDots', scr_win, [info.scr_xcenter info.scr_ycenter], info.fp_size_pix_white, info.white_idx, [], 2,1);
-    Screen('DrawDots', scr_win, [info.scr_xcenter info.scr_ycenter], info.fp_size_pix_black, info.black_idx, [], 2,1);
+    Screen('DrawDots', win, [info.scr_xcenter info.scr_ycenter], info.fp_size_pix_white, info.white_idx, [], 2,1);
+    Screen('DrawDots', win, [info.scr_xcenter info.scr_ycenter], info.fp_size_pix_black, info.black_idx, [], 2,1);
 
-    Screen('DrawingFinished', scr_win);
-    Screen('Flip', scr_win);
+    Screen('DrawingFinished', win);
+    Screen('Flip', win);
+   
+    %        % Add frame to movie
+     % Screen('AddFrameToMovie', win, [], 'frontBuffer', moviePtr);
 
     % 2) teclado + aceleração
     [key_press, ~, key_code] = KbCheck;
@@ -168,33 +173,36 @@ if show_fb
     y_true = ring_rad * sin(true_rad);
 
     % draw ring
-    Screen('FrameOval', scr_win, [255 103 0], target_rect, ring_thick);
+    Screen('FrameOval', win, [255 103 0], target_rect, ring_thick);
 
     % draw TRUE direction dot (e.g., blue)
-    Screen('DrawDots', scr_win, [x_true; y_true], RDK.size_dot_pix*4, [1 1 1]*255, qtarget, 3, 1);
+    Screen('DrawDots', win, [x_true; y_true], RDK.size_dot_pix*4, [1 1 1]*255, qtarget, 3, 1);
 
     % pontos da resposta
     xdot = ring_rad * cos(resp_rad);
     ydot = ring_rad * sin(resp_rad);
-    Screen('DrawDots', scr_win, [xdot; ydot], RDK.size_dot_pix*4, [255 103 0], qtarget, 3, 1);
+    Screen('DrawDots', win, [xdot; ydot], RDK.size_dot_pix*4, [255 103 0], qtarget, 3, 1);
 
-    DrawFormattedText(scr_win, line1, 'center', round(scr_center(2) - scr_ppd*7),[1 1 1]*255);
+    DrawFormattedText(win, line1, 'center', round(scr_center(2) - scr_ppd*7),[1 1 1]*255);
     if abs(err_deg) < 20
-        DrawFormattedText(scr_win, 'Excelente!', 'center', round(qtarget(2) - scr_ppd*4.7),[1 1 1]*255);
+        DrawFormattedText(win, 'Excelente!', 'center', round(qtarget(2) - scr_ppd*4.7),[1 1 1]*255);
     elseif abs(err_deg) < 30
-        DrawFormattedText(scr_win, 'Muito bom!', 'center', round(qtarget(2) - scr_ppd*4.7),[1 1 1]*255);
+        DrawFormattedText(win, 'Muito bom!', 'center', round(qtarget(2) - scr_ppd*4.7),[1 1 1]*255);
     elseif abs(err_deg) < 40
-        DrawFormattedText(scr_win, 'Foi perto!', 'center', round(qtarget(2) - scr_ppd*4.7),[1 1 1]*255);
+        DrawFormattedText(win, 'Foi perto!', 'center', round(qtarget(2) - scr_ppd*4.7),[1 1 1]*255);
     else
-        DrawFormattedText(scr_win, sprintf('Erro: %0.1f°', err_deg), 'center', round(qtarget(2) - scr_ppd*4.7),[1 1 1]*255);
+        DrawFormattedText(win, sprintf('Erro: %0.1f°', err_deg), 'center', round(qtarget(2) - scr_ppd*4.7),[1 1 1]*255);
     end
-    DrawFormattedText(scr_win, 'Pressione [ESPAÇO] para continuar', 'center', round(scr_center(2) + scr_ppd*7), [1 1 1]*255, [], [], [], 1.5);
+    DrawFormattedText(win, 'Pressione [ESPAÇO] para continuar', 'center', round(scr_center(2) + scr_ppd*7), [1 1 1]*255, [], [], [], 1.5);
 
-    Screen('DrawDots', scr_win, [info.scr_xcenter info.scr_ycenter], info.fp_size_pix_white, info.white_idx, [], 2,1);
-    Screen('DrawDots', scr_win, [info.scr_xcenter info.scr_ycenter], info.fp_size_pix_black, info.black_idx, [], 2,1);
+    Screen('DrawDots', win, [info.scr_xcenter info.scr_ycenter], info.fp_size_pix_white, info.white_idx, [], 2,1);
+    Screen('DrawDots', win, [info.scr_xcenter info.scr_ycenter], info.fp_size_pix_black, info.black_idx, [], 2,1);
 
-    Screen('DrawingFinished', scr_win);
-    Screen('Flip', scr_win);
+    Screen('DrawingFinished', win);
+    Screen('Flip', win);
+  
+    %          % Add frame to movie
+   % Screen('AddFrameToMovie', win, [], 'frontBuffer', moviePtr);
 
     while KbCheck; end
     while true
@@ -210,8 +218,12 @@ if show_fb
     while KbCheck; end
 end
 
-Screen('DrawingFinished', scr_win);
-Screen('Flip', scr_win);
+Screen('DrawingFinished', win);
+Screen('Flip', win);
+
+
+%    % Add frame to movie
+     % Screen('AddFrameToMovie', win, [], 'frontBuffer', moviePtr);
 end
 
 % =================== SUBFUNÇÕES LOCAIS ===================

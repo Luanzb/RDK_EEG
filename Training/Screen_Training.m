@@ -110,8 +110,10 @@ trial = 1;
 try
 
 
+    % movieName = 'trial_recording_fast_eeg.mp4';
+    % moviePtr = Screen('CreateMovie', win, movieName, [], [], 120);
 
-    while trial <= size(info.matrix,1)
+    while trial <= 1 %size(info.matrix,1)
 
         FIX = 2;
         SRT2 = 2;
@@ -340,6 +342,10 @@ try
 
             end
 
+
+                    % Add frame to movie
+       %Screen('AddFrameToMovie', win, [], 'frontBuffer', moviePtr);
+
         end
 
 
@@ -348,6 +354,8 @@ try
         Screen('DrawDots', win, [info.scr_xcenter info.scr_ycenter], info.fp_size_pix_black, info.black_idx, [], 2,1);
         Screen('Flip', win);
 
+        % Add frame to movie
+      % Screen('AddFrameToMovie', win, [], 'frontBuffer', moviePtr);
 
         
         if FIX == 3
@@ -505,6 +513,7 @@ try
         end
 
 
+        % Screen('FinalizeMovie', moviePtr);
 
 
         % info.matrix(trial,6) ~= 0 marks the end of a short block (1) or

@@ -149,18 +149,18 @@ const.numMeanLife = 0.150;          const.numMeanLife = (round(const.numMeanLife
 
 %% Matrix of trials
 
-%  Side Color      Cue side       Ori Left     Ori Right  Direction report        
-%------------------------------------------------------------------------
-% 1 [Green]    1=Left  2=Right                             1 = report
-% 2 [Red]      1=Left  2=Right                             0 = no report
+%  Side Color      Cue side       Ori Left     Ori Right        
+%-------------------------------------------------------
+% 1 [blue]      1=Left  2=Right                          
+% 2 [pink]      1=Left  2=Right                        
 
 info.ntrials = 800;
 
 % 60 trials in sequence for an specific color (red or green).
-% the color sequence (green=1; red=2 or red=2; green=1) will be set based
+% the color sequence (blue=1; pink=2 or pink=2; blue=1) will be set based
 % on the participant's number. Odd participant's number will have the
-% [green=1; red=2] sequence. Even participant's number will have the
-% [red=2; green=1] sequence. 
+% [blue=1; pink=2] sequence. Even participant's number will have the
+% [pink=2; blue=1] sequence. 
 
 if rem(sub.id_num,2) == 1
     pre_side_color = repmat(repelem([1 2],80),1,5)';
@@ -173,17 +173,26 @@ left_cue = repelem(1,40)';
 right_cue = repelem(2,40)';
 cue_side = [];
 
+left_target = repelem(1,40)';
+right_target = repelem(2,40)';
+target_side = [];
+
+
 for dd = 1:10 
     pre_cue_side = Shuffle([left_cue; right_cue]);
     cue_side = [cue_side; pre_cue_side];
+
+    pre_target_side = Shuffle([left_target; right_target]);
+    target_side = [target_side; pre_target_side];
 end
 
+% 1 = congruent cue and target sides
+% 0 = incongruent cue and target sides
+cue_validity = cue_side == target_side;
 
-pre_ori_left = [repmat(repelem([1:360],1),1,2) Shuffle(1:360)]';   
-ori_left = Shuffle(pre_ori_left(1:info.ntrials,1));
 
-pre_ori_right = [repmat(repelem([1:360],1),1,2)  Shuffle(1:360)]';   
-ori_right = Shuffle(pre_ori_right(1:info.ntrials,1));
+pre_ori = [repmat(repelem([1:360],1),1,2)  Shuffle(1:360)]';   
+motion_dir = Shuffle(pre_ori(1:info.ntrials,1));
 
 
 % ones mark the beginning of a block of trials.
@@ -221,11 +230,38 @@ true_deg =   NaN(info.ntrials,1);
 rt_s =       NaN(info.ntrials,1);
 
    
+% Info Matrix
+% Column number:
+% (1) - [saccade to a specific color side] 1 = blue; 2 = pink 
+% (2) - [Saccadic cue side] 1 = left; 2 = right
+% (3) - [Target side] 1 = left; 2 = right
+% (4) - [Target motion direction] any within 360º
+% (5) - [marks short block onset (20 trials each)]
+%       1 = short block onset
+%       2 = short block onset + new color block onset (lasting 80 trials)
+% (6) - [marks short block ending (20 trials each)]
+%       1 = short block ends
+%       2 = marks rest block (after every 80 trials)
+% (7) - Saccadic cue onset in frames
+% (8) - Trial offset in frames
+% (9) - Initial dial angle for each trial
+% (10)- Currently, this trial contains only 0 values. After the experiment,
+%       this matrix will be updated and will receive 1 or two in case: 
+%       1 = marks the trial that will be repeated at the end of the short
+%       block
+%       2 = marks the repeated trial at the end of the short block
+% (11)- It will receive the participant's motion direction report
+% (12)- It will receive the participant's report error in degrees
+% (13)- It will receive the target degrees converted to matlab (need to confirm that)
+% (14)- It will receive the participant's manual reaction time relative to
+%       the motion direction report confirmation
+% (15)- Cue validity. That is, if cue and target sides are congruent.
+%       1 = Congruent; 0 = Incongruent
 
 matrix = [pre_side_color     ... 1 
           cue_side           ... 2
-          ori_left           ... 3
-          ori_right          ... 4
+          target_side        ... 3
+          motion_dir         ... 4
           trl.onset_blocks   ... 5
           trl.offset_blocks  ... 6
           trl.cue_on         ... 7
@@ -235,8 +271,8 @@ matrix = [pre_side_color     ... 1
           report_deg         ... 11
           error_deg          ... 12
           true_deg           ... 13
-          rt_s               ];% 14
-
+          rt_s               ... 14                
+          cue_validity];       % 15
 
 
 info.matrix = matrix;
