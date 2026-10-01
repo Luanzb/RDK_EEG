@@ -1,6 +1,8 @@
-function  [time,trl,info] = Screen_RDK_EEG(info,trl,sub,RDK,const)
+function  [time,trl,info] = Screen_RDK_EEG(info,trl,sub,RDK,const,circle1)
 
 
+ResponsePixx('Close');
+ResponsePixx('Open');
 %% Screen setup
 
 FlushEvents;
@@ -382,13 +384,13 @@ try
 
 
 
-        Screen('BlendFunction', win, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        Screen('DrawDots', win, [info.scr_xcenter info.scr_ycenter], info.fp_size_pix_white, info.white_idx, [], 2,1);
-        Screen('DrawDots', win, [info.scr_xcenter info.scr_ycenter], info.fp_size_pix_black, info.black_idx, [], 2,1);
-
-        % non-trigger signal - white square
-        Screen( 'FillRect',win,round([0 0 0]),triggerRect);
-        Screen('Flip', win);
+        % Screen('BlendFunction', win, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        % Screen('DrawDots', win, [info.scr_xcenter info.scr_ycenter], info.fp_size_pix_white, info.white_idx, [], 2,1);
+        % Screen('DrawDots', win, [info.scr_xcenter info.scr_ycenter], info.fp_size_pix_black, info.black_idx, [], 2,1);
+        % 
+        % % non-trigger signal - white square
+        % Screen( 'FillRect',win,round([0 0 0]),triggerRect);
+        % Screen('Flip', win);
 
 
 
@@ -461,41 +463,73 @@ try
         % sides meet the specified requirements.
         if abort_dir_report == 2
 
-            % Orientation selector -----------------------------------------------
 
-            % Continuous report (correcting angle convention)
-            % motion direction report is always on the target side.
-
-            if info.matrix(trial,3) == 1
-                qtarget = RDK.coordL;        
-                % angle used in DrawTexture
-                true_deg_ptb = info.matrix(trial,4); 
+             if info.matrix(trial,3) == 1
+                circle_position = circle1.leftCirclePos;        
             else
-                qtarget = RDK.coordR;
-                % angle used in DrawTexture
-                true_deg_ptb = info.matrix(trial,4);
+                circle_position = circle1.rightCirclePos;
             end
 
 
+            % Draw dashed circle around previous target
+            drawDashedCircle(win, circle_position(1,1), circle_position(1,2), ...
+                circle1.rad_pix, circle1.Color, circle1.lineWidth, circle1.linegap);
 
-            % *** CRITICAL CONVERSION ***
-            % PTB effectively rotates clockwise; dial uses counter-clockwise.
-            % So we reverse the sign and treat it as an axis. (0..360):
-
-            true_dir = mod(-true_deg_ptb, 360); % keep your PTB sign correction
-
-
-            % pixels per degree (1° -> px)
-            ppd = dva2pix(info.scr_dist_cm, info.scr_xsize_cm, info.scr_xsize, 1);
+            Screen('Flip', win);
 
 
-            [resp_deg, err_deg, rt] = get_continuous_report(win, ppd, info.matrix(trial,9), true_dir, true, info, qtarget,RDK);
+             ResponsePixx('StartNow', 1, [0 1 0 1 0], 1);
+            while 1
+                [buttons, ~, ~] = ResponsePixx('GetLoggedResponses', 1, 1, 2000);
+                if ~isempty(buttons)
+                    if buttons(1,2) == 1         % Yellow button up
+                        info.matrix(trial,11) = 90;
+                        break;
+                    elseif buttons(1,4) == 1     % Blue button down
+                        info.matrix(trial,11) = 270;
+                        break;
+                    end
+                end
+            end
+            ResponsePixx('StopNow', 1, [0 0 0 0 0], 0);
 
 
-            info.matrix(trial,11) = resp_deg; % (1..360)
-            info.matrix(trial,12) = err_deg;   % (-180, +180]
-            info.matrix(trial,13) = true_dir;
-            info.matrix(trial,14) = rt; % time (s)
+
+            % % Orientation selector -----------------------------------------------
+            % 
+            % % Continuous report (correcting angle convention)
+            % % motion direction report is always on the target side.
+            % 
+            % if info.matrix(trial,3) == 1
+            %     qtarget = RDK.coordL;        
+            %     % angle used in DrawTexture
+            %     true_deg_ptb = info.matrix(trial,4); 
+            % else
+            %     qtarget = RDK.coordR;
+            %     % angle used in DrawTexture
+            %     true_deg_ptb = info.matrix(trial,4);
+            % end
+
+
+
+            % % *** CRITICAL CONVERSION ***
+            % % PTB effectively rotates clockwise; dial uses counter-clockwise.
+            % % So we reverse the sign and treat it as an axis. (0..360):
+            % 
+            % true_dir = mod(-true_deg_ptb, 360); % keep your PTB sign correction
+            % 
+            % 
+            % % pixels per degree (1° -> px)
+            % ppd = dva2pix(info.scr_dist_cm, info.scr_xsize_cm, info.scr_xsize, 1);
+            % 
+            % 
+            % [resp_deg, err_deg, rt] = get_continuous_report(win, ppd, info.matrix(trial,9), true_dir, true, info, qtarget,RDK);
+            % 
+            % 
+            % info.matrix(trial,11) = resp_deg; % (1..360)
+            % info.matrix(trial,12) = err_deg;   % (-180, +180]
+            % info.matrix(trial,13) = true_dir;
+            % info.matrix(trial,14) = rt; % time (s)
 
 
         end
@@ -609,6 +643,7 @@ try
     Datapixx('RegWr');
 
     Screen('CloseAll');
+    ResponsePixx('Close');
 
     Eyelink('CloseFile');
 

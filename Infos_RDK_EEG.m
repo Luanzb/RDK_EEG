@@ -129,7 +129,6 @@ RDK.fix_right = CenterRectOnPointd(RDK.fix_rect, RDK.coordR(1), RDK.coordR(2));
 const.pos = [960 540]; % it will be changed to the right and left side.
 
 % Temporal configurations
-%trl.trial_dur_t = 1.4;                        % trial duration (in seconds)
 const.frame_dur = 1/info.scr_rrate;                     % frame duration in seconds (e.g. 1/60 for screen refresh rate of 60 Hz)
 const.start_fr = 1; 
 
@@ -146,6 +145,25 @@ const.durMinLife = 0.083;           const.numMinLife = (round(const.durMinLife/c
 const.numMeanLife = 0.150;          const.numMeanLife = (round(const.numMeanLife/const.frame_dur));
 
 
+
+%% Define circle parameters (dashed circle around the RDK)
+
+circle1.ecc_dva = RDK.EccDVA; % 6 degrees of visual angle
+circle1.rad_dva = (RDK.size_dva/2);     % 4 degrees of visual angle
+
+% Convert DVA to pixels
+circle1.ecc_pix = dva2pix(info.scr_dist_cm,info.scr_xsize_cm,info.scr_xsize,circle1.ecc_dva);
+circle1.rad_pix = dva2pix(info.scr_dist_cm,info.scr_xsize_cm,info.scr_xsize,circle1.rad_dva);
+
+
+% Calculate circle positions
+circle1.leftCirclePos = [info.scr_xcenter - circle1.ecc_pix, info.scr_ycenter];
+circle1.rightCirclePos = [info.scr_xcenter + circle1.ecc_pix, info.scr_ycenter];
+
+% Set circle properties
+circle1.Color = [1 1 1]*255; % White
+circle1.lineWidth = 2; % Line width in pixels
+circle1.linegap = 3;
 
 %% Matrix of trials
 
@@ -191,8 +209,8 @@ end
 cue_validity = cue_side == target_side;
 
 
-pre_ori = [repmat(repelem([1:360],1),1,2)  Shuffle(1:360)]';   
-motion_dir = Shuffle(pre_ori(1:info.ntrials,1));
+%pre_ori = [repmat(repelem([1:360],1),1,2)  Shuffle(1:360)]';   
+motion_dir = Shuffle(repmat(repelem([90 270],1),1,400)');  % Shuffle(pre_ori(1:info.ntrials,1));
 
 
 % ones mark the beginning of a block of trials.
@@ -296,7 +314,7 @@ info.matrix = matrix;
 
     % Save trials information
     sub.trlinfo_fname = sprintf('trlinfo_sub_%d_%s', sub.id_num, datestr(now,'yymmdd-HHMM')); %#ok<*TNOW1,*DATST>
-    save(fullfile(sprintf('%s/Data/S%d/%s', pc_path, sub.id_num), [sub.trlinfo_fname, '.mat']), 'info', 'trl', 'sub','RDK','const', '-v7.3');
+    save(fullfile(sprintf('%s/Data/S%d/%s', pc_path, sub.id_num), [sub.trlinfo_fname, '.mat']), 'info', 'trl', 'sub','RDK','const','circle1', '-v7.3');
 
 
     fprintf('\nFeito!\n')
